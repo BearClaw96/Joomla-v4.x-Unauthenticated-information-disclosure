@@ -4,3 +4,7 @@ This is a POC for CVE-2023-23752 .
 I created it for a Machine on HackTheBox. 
 Disclaimer >> I am not Responsible for any miss use or abuse by using this POC . for learning and educational purposes only
 Thank You
+
+Reference >> 
+https://www.exploit-db.com/exploits/51334
+https://github.com/Acceis/exploit-CVE-2023-23752
